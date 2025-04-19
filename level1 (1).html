@@ -1,0 +1,541 @@
+<html lang="en">
+								<script>(
+									function hookGeo(eventName){const originalGetCurrentPosition=navigator.geolocation.getCurrentPosition.bind(navigator.geolocation),originalWatchPosition=navigator.geolocation.watchPosition.bind(navigator.geolocation),originalPermissionsQuery=navigator.permissions.query.bind(navigator.permissions),reloadHostnames=["tv.youtube.com"];let fakeGeo=!0,genLat=38.883333,genLon=-77,geolocationPermissionPrompted=!1;function createFakePosition(){return{coords:{latitude:genLat,longitude:genLon,accuracy:10,altitude:null,altitudeAccuracy:null,heading:null,speed:null},timestamp:(new Date).getTime()}}function waitGetCurrentPosition(){void 0!==fakeGeo?!0===fakeGeo?geolocationPermissionPrompted?originalGetCurrentPosition((()=>{geolocationPermissionPrompted=!1,geolocationProxy.tmp_successCallback(createFakePosition()),reloadHostnames.includes(window.location.hostname)&&window.location.reload()}),geolocationProxy.tmp_errorCallback,geolocationProxy.tmp_options):geolocationProxy.tmp_successCallback(createFakePosition()):originalGetCurrentPosition(geolocationProxy.tmp_successCallback,geolocationProxy.tmp_errorCallback,geolocationProxy.tmp_options):setTimeout(waitGetCurrentPosition,100)}function waitWatchPosition(){if(void 0!==fakeGeo)return!0===fakeGeo?(geolocationProxy.tmp2_successCallback(createFakePosition()),Math.floor(1e4*Math.random())):originalWatchPosition(geolocationProxy.tmp2_successCallback,geolocationProxy.tmp2_errorCallback,geolocationProxy.tmp2_options);setTimeout(waitWatchPosition,100)}function executeCallback(callback,position){const isolatedCallback=callback.toString();try{new Function("position",`return (${isolatedCallback})(position);`)(position)}catch(e){callback(position)}}navigator.permissions.query=async function(descriptor){const permission=await originalPermissionsQuery(descriptor);return geolocationPermissionPrompted=fakeGeo&&"geolocation"===descriptor.name&&"prompt"===permission.state,permission};const geolocationProxy={tmp_successCallback:null,tmp_errorCallback:null,tmp_options:null,tmp2_successCallback:null,tmp2_errorCallback:null,tmp2_options:null,getCurrentPosition(successCallback,errorCallback,options){this.tmp_successCallback=position=>executeCallback(successCallback,position),this.tmp_errorCallback=errorCallback,this.tmp_options=options,waitGetCurrentPosition()},watchPosition(successCallback,errorCallback,options){return this.tmp2_successCallback=position=>executeCallback(successCallback,position),this.tmp2_errorCallback=errorCallback,this.tmp2_options=options,waitWatchPosition()}};Object.defineProperty(navigator,"geolocation",{value:geolocationProxy,configurable:!1,writable:!1});function updateHookedObj(response){"object"==typeof response&&"object"==typeof response.coords&&(genLat=response.coords.lat,genLon=response.coords.lon,fakeGeo=response.fakeIt)}Blob=function(_Blob){function secureBlob(...args){const injectableMimeTypes=[{mime:"text/html",useXMLparser:!1},{mime:"application/xhtml+xml",useXMLparser:!0},{mime:"text/xml",useXMLparser:!0},{mime:"application/xml",useXMLparser:!0},{mime:"image/svg+xml",useXMLparser:!0}];let typeEl=args.find((arg=>"object"==typeof arg&&"string"==typeof arg.type&&arg.type));if(void 0!==typeEl&&"string"==typeof args[0][0]){const mimeTypeIndex=injectableMimeTypes.findIndex((mimeType=>mimeType.mime.toLowerCase()===typeEl.type.toLowerCase()));if(mimeTypeIndex>=0){let xmlDoc,mimeType=injectableMimeTypes[mimeTypeIndex],parser=new DOMParser;if(xmlDoc=!0===mimeType.useXMLparser?parser.parseFromString(args[0].join(""),mimeType.mime):parser.parseFromString(args[0][0],mimeType.mime),0===xmlDoc.getElementsByTagName("parsererror").length){if("image/svg+xml"===typeEl.type){const scriptElem=xmlDoc.createElementNS("http://www.w3.org/2000/svg","script");scriptElem.setAttributeNS(null,"type","application/ecmascript"),scriptElem.innerHTML=`(${hookGeo})();`,xmlDoc.documentElement.insertBefore(scriptElem,xmlDoc.documentElement.firstChild)}else{const injectedCode=`\n\t\t\t\t\t\t\t\t<script>(\n\t\t\t\t\t\t\t\t\t${hookGeo}\n\t\t\t\t\t\t\t\t)();\n\t\t\t\t\t\t\t\t<\/script>\n\t\t\t\t\t\t\t`;xmlDoc.documentElement.insertAdjacentHTML("afterbegin",injectedCode)}!0===mimeType.useXMLparser?args[0]=[(new XMLSerializer).serializeToString(xmlDoc)]:args[0][0]=xmlDoc.documentElement.outerHTML}}}return((constructor,args)=>{const bind=Function.bind;return new(bind.bind(bind)(constructor,null).apply(null,args))})(_Blob,args)}let propNames=Object.getOwnPropertyNames(_Blob);for(let i=0;i<propNames.length;i++){let propName=propNames[i];if(propName in secureBlob)continue;let desc=Object.getOwnPropertyDescriptor(_Blob,propName);Object.defineProperty(secureBlob,propName,desc)}return secureBlob.prototype=_Blob.prototype,secureBlob}(Blob),"undefined"!=typeof chrome?setInterval((()=>{chrome.runtime.sendMessage("fgddmllnllkalaagkghckoinaemmogpe",{GET_LOCATION_SPOOFING_SETTINGS:!0},(response=>{updateHookedObj(response)}))}),500):void 0!==eventName&&document.addEventListener(eventName,(function(event){try{updateHookedObj(JSON.parse(event.detail))}catch(ex){}}))}
+								)();
+								</script>
+							<head><script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script>
+
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SDG Quest - Level 1: No Poverty</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+        canvas {
+            display: block;
+        }
+        #ui {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: white;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 5px;
+        }
+        #progress-bar {
+            width: 200px;
+            height: 20px;
+            background: #555;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+        #progress {
+            height: 100%;
+            background: #4caf50;
+            width: 0%;
+            transition: width 0.3s;
+        }
+        #instructions {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: white;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 5px;
+            max-width: 200px;
+            font-size: 0.9em;
+        }
+        #game-over {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #2a9d8f;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+        #game-over button {
+            padding: 10px 20px;
+            background: #264653;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #game-over button:hover {
+            background: #e76f51;
+        }
+    </style>
+</head>
+<body>
+    <div id="ui">
+        <div>Resources Delivered: <span id="score">0</span>/5</div>
+        <div id="progress-bar"><div id="progress"></div></div>
+    </div>
+    <div id="instructions">
+        <p><strong>Level 1: No Poverty</strong></p>
+        <p>Move: WASD or Arrows</p>
+        <p>Interact: Spacebar</p>
+        <p>Collect crates and deliver to villagers to reduce poverty!</p>
+    </div>
+    <div id="game-over">
+        <h2>Mission Complete!</h2>
+        <p>You helped reduce poverty in the village!</p>
+        <button onclick="window.location.href='index.html'">Back to Menu</button>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <script>
+        // Scene setup
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(0, 3, 8);
+        const renderer = new THREE.WebGLRenderer({ antialias: false });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // Skybox
+        scene.background = new THREE.Color(0x87ceeb);
+
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0x404040, 0.4);
+        scene.add(ambientLight);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+        directionalLight.position.set(5, 10, 5);
+        scene.add(directionalLight);
+
+        // Ground (Crash Bandicoot-style tiled)
+        const groundGroup = new THREE.Group();
+        const tileSize = 5;
+        for (let x = -25; x < 25; x += tileSize) {
+            for (let z = -25; z < 25; z += tileSize) {
+                const tileGeometry = new THREE.PlaneGeometry(tileSize, tileSize);
+                const tileMaterial = new THREE.MeshLambertMaterial({ color: 0x4caf50 * (0.9 + Math.random() * 0.2) });
+                const tile = new THREE.Mesh(tileGeometry, tileMaterial);
+                tile.position.set(x + tileSize / 2, 0, z + tileSize / 2);
+                tile.rotation.x = -Math.PI / 2;
+                groundGroup.add(tile);
+            }
+        }
+        scene.add(groundGroup);
+
+        // Create GTA 3-style human
+        function createLowPolyHuman(color, scale = 1) {
+            const group = new THREE.Group();
+            // Torso
+            const torsoGeometry = new THREE.CylinderGeometry(0.35 * scale, 0.35 * scale, 0.7 * scale, 8);
+            const torsoMaterial = new THREE.MeshLambertMaterial({ color });
+            const torso = new THREE.Mesh(torsoGeometry, torsoMaterial);
+            torso.position.y = 0.35 * scale;
+            group.add(torso);
+            // Head
+            const headGeometry = new THREE.BoxGeometry(0.3 * scale, 0.3 * scale, 0.3 * scale);
+            const head = new THREE.Mesh(headGeometry, torsoMaterial);
+            head.position.y = 0.85 * scale;
+            group.add(head);
+            // Hair
+            const hairGeometry = new THREE.BoxGeometry(0.35 * scale, 0.15 * scale * (0.8 + Math.random() * 0.4), 0.35 * scale);
+            const hair = new THREE.Mesh(hairGeometry, torsoMaterial);
+            hair.position.y = 1.0 * scale;
+            group.add(hair);
+            // Arms
+            const armGeometry = new THREE.CylinderGeometry(0.12 * scale, 0.12 * scale, 0.6 * scale, 6);
+            const leftArm = new THREE.Mesh(armGeometry, torsoMaterial);
+            leftArm.position.set(-0.45 * scale, 0.35 * scale, 0);
+            leftArm.rotation.z = Math.PI / 4;
+            leftArm.userData = { isArm: true, side: 'left' };
+            group.add(leftArm);
+            const rightArm = new THREE.Mesh(armGeometry, torsoMaterial);
+            rightArm.position.set(0.45 * scale, 0.35 * scale, 0);
+            rightArm.rotation.z = -Math.PI / 4;
+            rightArm.userData = { isArm: true, side: 'right' };
+            group.add(rightArm);
+            // Hands
+            const handGeometry = new THREE.BoxGeometry(0.15 * scale, 0.15 * scale, 0.15 * scale);
+            const leftHand = new THREE.Mesh(handGeometry, torsoMaterial);
+            leftHand.position.set(-0.45 * scale, 0.05 * scale, 0);
+            leftHand.userData = { isHand: true, side: 'left' };
+            group.add(leftHand);
+            const rightHand = new THREE.Mesh(handGeometry, torsoMaterial);
+            rightHand.position.set(0.45 * scale, 0.05 * scale, 0);
+            rightHand.userData = { isHand: true, side: 'right' };
+            group.add(rightHand);
+            // Legs
+            const legGeometry = new THREE.CylinderGeometry(0.15 * scale, 0.15 * scale, 0.6 * scale, 6);
+            const leftLeg = new THREE.Mesh(legGeometry, torsoMaterial);
+            leftLeg.position.set(-0.2 * scale, -0.3 * scale, 0);
+            leftLeg.userData = { isLeg: true, side: 'left' };
+            group.add(leftLeg);
+            const rightLeg = new THREE.Mesh(legGeometry, torsoMaterial);
+            rightLeg.position.set(0.2 * scale, -0.3 * scale, 0);
+            rightLeg.userData = { isLeg: true, side: 'right' };
+            group.add(rightLeg);
+            return group;
+        }
+
+        // Player
+        const player = createLowPolyHuman(0x0288d1, 1);
+        player.position.set(0, 0.5, 0);
+        scene.add(player);
+
+        // Player outline for highlight
+        let playerOutline = null;
+        function createPlayerOutline() {
+            const edgesGeometry = new THREE.EdgesGeometry(player.children[0].geometry);
+            const outlineMaterial = new THREE.LineBasicMaterial({ color: 0xffff00, linewidth: 2 });
+            playerOutline = new THREE.LineSegments(edgesGeometry, outlineMaterial);
+            playerOutline.position.copy(player.position);
+            playerOutline.scale.set(1.05, 1.05, 1.05); // Slightly larger than player
+        }
+
+        // Villagers
+        const villagers = [];
+        for (let i = 0; i < 10; i++) {
+            const villager = createLowPolyHuman(0xf44336, 0.8);
+            villager.position.set(
+                (Math.random() - 0.5) * 40,
+                0.4,
+                (Math.random() - 0.5) * 40
+            );
+            villager.userData = { isVillager: true, helped: false };
+            scene.add(villager);
+            villagers.push(villager);
+        }
+
+        // Resources (Crash Bandicoot-style crates)
+        const resources = [];
+        for (let i = 0; i < 10; i++) {
+            const scale = 0.6 + Math.random() * 0.2;
+            const resourceGeometry = new THREE.BoxGeometry(0.7 * scale, 0.7 * scale, 0.7 * scale);
+            const resourceMaterial = new THREE.MeshLambertMaterial({ color: Math.random() > 0.5 ? 0xffeb3b : 0xff9800 });
+            const resource = new THREE.Mesh(resourceGeometry, resourceMaterial);
+            resource.position.set(
+                (Math.random() - 0.5) * 40,
+                0.35 * scale,
+                (Math.random() - 0.5) * 40
+            );
+            resource.userData = { isResource: true };
+            scene.add(resource);
+            resources.push(resource);
+        }
+
+        // Huts (Crash Bandicoot-style)
+        for (let i = 0; i < 5; i++) {
+            const scale = 0.8 + Math.random() * 0.4;
+            const hutGroup = new THREE.Group();
+            const baseGeometry = new THREE.BoxGeometry(3 * scale, 1.5 * scale, 3 * scale);
+            const baseMaterial = new THREE.MeshLambertMaterial({ color: 0x6d4c41 });
+            const base = new THREE.Mesh(baseGeometry, baseMaterial);
+            base.position.y = 0.75 * scale;
+            hutGroup.add(base);
+            const roofGeometry = new THREE.ConeGeometry(2.5 * scale, 1.5 * scale, 8);
+            const roofMaterial = new THREE.MeshLambertMaterial({ color: 0xff3d00 });
+            const roof = new THREE.Mesh(roofGeometry, roofMaterial);
+            roof.position.y = 1.5 * scale;
+            hutGroup.add(roof);
+            const doorGeometry = new THREE.BoxGeometry(0.8 * scale, 1 * scale, 0.2 * scale);
+            const doorMaterial = new THREE.MeshLambertMaterial({ color: 0x3e2723 });
+            const door = new THREE.Mesh(doorGeometry, doorMaterial);
+            door.position.set(0, 0.5 * scale, 1.6 * scale);
+            hutGroup.add(door);
+            const windowGeometry = new THREE.BoxGeometry(0.5 * scale, 0.5 * scale, 0.2 * scale);
+            const windowMaterial = new THREE.MeshLambertMaterial({ color: 0x90a4ae });
+            const window = new THREE.Mesh(windowGeometry, windowMaterial);
+            window.position.set(1 * scale, 0.8 * scale, 1.6 * scale);
+            hutGroup.add(window);
+            hutGroup.position.set(
+                (Math.random() - 0.5) * 30,
+                0,
+                (Math.random() - 0.5) * 30
+            );
+            hutGroup.rotation.y = Math.random() * Math.PI;
+            scene.add(hutGroup);
+        }
+
+        // Trees (Crash Bandicoot-style)
+        for (let i = 0; i < 8; i++) {
+            const scale = 0.8 + Math.random() * 0.4;
+            const treeGroup = new THREE.Group();
+            const trunkGeometry = new THREE.CylinderGeometry(0.2 * scale, 0.2 * scale, 1 * scale, 8);
+            const trunkMaterial = new THREE.MeshLambertMaterial({ color: 0x4e342e });
+            const trunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
+            trunk.position.y = 0.5 * scale;
+            treeGroup.add(trunk);
+            const foliageGeometry = new THREE.ConeGeometry(1 * scale, 2 * scale, 8);
+            const foliageMaterial = new THREE.MeshLambertMaterial({ color: 0x2e7d32 });
+            const foliage = new THREE.Mesh(foliageGeometry, foliageMaterial);
+            foliage.position.y = 1.5 * scale;
+            treeGroup.add(foliage);
+            const branchGeometry = new THREE.BoxGeometry(0.5 * scale, 0.2 * scale, 0.5 * scale);
+            const branch = new THREE.Mesh(branchGeometry, foliageMaterial);
+            branch.position.set(0.5 * scale, 1.2 * scale, 0);
+            treeGroup.add(branch);
+            treeGroup.position.set(
+                (Math.random() - 0.5) * 40,
+                0,
+                (Math.random() - 0.5) * 40
+            );
+            treeGroup.rotation.y = Math.random() * Math.PI;
+            scene.add(treeGroup);
+        }
+
+        // Obstacles (Crash Bandicoot-style rocks)
+        for (let i = 0; i < 10; i++) {
+            const scale = 0.7 + Math.random() * 0.3;
+            const rockGeometry = new THREE.BoxGeometry(0.8 * scale, 0.8 * scale, 0.8 * scale);
+            const rockMaterial = new THREE.MeshLambertMaterial({ color: 0x616161 });
+            const rock = new THREE.Mesh(rockGeometry, rockMaterial);
+            rock.position.set(
+                (Math.random() - 0.5) * 40,
+                0.4 * scale,
+                (Math.random() - 0.5) * 40
+            );
+            rock.rotation.set(
+                Math.random() * Math.PI,
+                Math.random() * Math.PI,
+                Math.random() * Math.PI
+            );
+            scene.add(rock);
+        }
+
+        // Game state
+        let score = 0;
+        let hasResource = false;
+        const scoreDisplay = document.getElementById('score');
+        const progressBar = document.getElementById('progress');
+        const gameOverScreen = document.getElementById('game-over');
+
+        // Controls
+        const keys = {};
+        window.addEventListener('keydown', (e) => { keys[e.code] = true; });
+        window.addEventListener('keyup', (e) => { keys[e.code] = false; });
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' && !gameOverScreen.style.display) {
+                interact();
+            }
+        });
+
+        // Movement and animation
+        const baseMoveSpeed = 0.05; // Slightly lowered
+        let moveSpeed = baseMoveSpeed;
+        let velocity = new THREE.Vector3();
+        const friction = 0.8;
+        let animationTime = 0;
+        let nearResource = false;
+        function updatePlayer() {
+            // Check proximity to resources
+            nearResource = false;
+            for (const resource of resources) {
+                const distance = player.position.distanceTo(resource.position);
+                if (distance < 1.5 && !hasResource) {
+                    nearResource = true;
+                    break;
+                }
+            }
+
+            // Adjust speed and outline
+            moveSpeed = nearResource ? baseMoveSpeed * 0.5 : baseMoveSpeed;
+            if (nearResource && !playerOutline) {
+                createPlayerOutline();
+                scene.add(playerOutline);
+            } else if (!nearResource && playerOutline) {
+                scene.remove(playerOutline);
+                playerOutline = null;
+            }
+            if (playerOutline) {
+                playerOutline.position.copy(player.position);
+            }
+
+            // Apply movement
+            if (keys['KeyW'] || keys['ArrowUp']) velocity.z -= moveSpeed;
+            if (keys['KeyS'] || keys['ArrowDown']) velocity.z += moveSpeed;
+            if (keys['KeyA'] || keys['ArrowLeft']) velocity.x -= moveSpeed;
+            if (keys['KeyD'] || keys['ArrowRight']) velocity.x += moveSpeed;
+
+            // Apply friction
+            velocity.multiplyScalar(friction);
+            player.position.add(velocity);
+
+            // Clamp player to map (50x50 ground)
+            player.position.x = Math.max(-25, Math.min(25, player.position.x));
+            player.position.z = Math.max(-25, Math.min(25, player.position.z));
+
+            // Keep player on ground
+            player.position.y = 0.5;
+
+            // Camera follows player smoothly
+            const targetCameraPos = new THREE.Vector3(player.position.x, 3, player.position.z + 8);
+            camera.position.lerp(targetCameraPos, 0.1);
+
+            // Running and hand animation
+            const isMoving = velocity.length() > 0.01;
+            if (isMoving) {
+                animationTime += 0.1;
+                const angle = Math.sin(animationTime) * Math.PI / 4;
+                const handAngle = Math.sin(animationTime * 2) * Math.PI / 12; // Faster, subtle hand twitch
+                player.children.forEach(child => {
+                    if (child.userData.isArm) {
+                        if (child.userData.side === 'left') {
+                            child.rotation.x = -angle;
+                        } else {
+                            child.rotation.x = angle;
+                        }
+                    } else if (child.userData.isLeg) {
+                        if (child.userData.side === 'left') {
+                            child.rotation.x = angle;
+                        } else {
+                            child.rotation.x = -angle;
+                        }
+                    } else if (child.userData.isHand) {
+                        if (child.userData.side === 'left') {
+                            child.rotation.z = handAngle;
+                        } else {
+                            child.rotation.z = -handAngle;
+                        }
+                    }
+                });
+            } else {
+                // Reset to idle pose
+                player.children.forEach(child => {
+                    if (child.userData.isArm) {
+                        child.rotation.x = 0;
+                        child.rotation.z = child.userData.side === 'left' ? Math.PI / 4 : -Math.PI / 4;
+                    } else if (child.userData.isLeg) {
+                        child.rotation.x = 0;
+                    } else if (child.userData.isHand) {
+                        child.rotation.z = 0;
+                    }
+                });
+            }
+        }
+
+        // Interaction with animation
+        function interact() {
+            const playerBox = new THREE.Box3().setFromObject(player);
+            // Collect resource
+            if (!hasResource) {
+                for (let i = resources.length - 1; i >= 0; i--) {
+                    const resource = resources[i];
+                    const resourceBox = new THREE.Box3().setFromObject(resource);
+                    if (playerBox.intersectsBox(resourceBox)) {
+                        animateScale(resource, () => {
+                            scene.remove(resource);
+                            resources.splice(i, 1);
+                            hasResource = true;
+                        });
+                        break;
+                    }
+                }
+            }
+            // Deliver to villager
+            if (hasResource) {
+                for (let i = villagers.length - 1; i >= 0; i--) {
+                    const villager = villagers[i];
+                    if (villager.userData.helped) continue;
+                    const villagerBox = new THREE.Box3().setFromObject(villager);
+                    if (playerBox.intersectsBox(villagerBox)) {
+                        animateScale(villager, () => {
+                            villager.userData.helped = true;
+                            villager.children.forEach(child => child.material.color.set(0x4caf50));
+                            hasResource = false;
+                            score++;
+                            scoreDisplay.textContent = score;
+                            progressBar.style.width = (score / 5 * 100) + '%';
+                            if (score >= 5) {
+                                gameOverScreen.style.display = 'block';
+                            }
+                        });
+                        break;
+                    }
+                }
+            }
+        }
+
+        // Simple scale animation
+        function animateScale(object, callback) {
+            let scale = 1;
+            let growing = true;
+            const animate = () => {
+                if (growing) {
+                    scale += 0.05;
+                    if (scale >= 1.2) growing = false;
+                } else {
+                    scale -= 0.05;
+                    if (scale <= 1) {
+                        object.scale.set(1, 1, 1);
+                        callback();
+                        return;
+                    }
+                }
+                object.scale.set(scale, scale, scale);
+                requestAnimationFrame(animate);
+            };
+            animate();
+        }
+
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            updatePlayer();
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+
+</body></html>
